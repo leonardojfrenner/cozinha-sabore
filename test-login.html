@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Login - Cozinha Sabore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #f59e0b;
+            text-align: center;
+        }
+        .test-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .credentials {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .btn {
+            background: #f59e0b;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #d97706;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍽️ Cozinha Sabore - Teste de Login</h1>
+        
+        <div class="test-info">
+            <h3>📋 Informações para Teste</h3>
+            <p>Este sistema foi desenvolvido para gerenciar pedidos de restaurantes. Use as credenciais abaixo para testar:</p>
+        </div>
+
+        <div class="credentials">
+            <h3>🔑 Credenciais de Teste</h3>
+            <p><strong>Restaurante 1 - Cozinha da Mãe:</strong></p>
+            <ul>
+                <li><strong>Email:</strong> cozinha@email.com</li>
+                <li><strong>Senha:</strong> 123456</li>
+            </ul>
+            
+            <p><strong>Restaurante 2 - Temakeria:</strong></p>
+            <ul>
+                <li><strong>Email:</strong> temaki@email.com</li>
+                <li><strong>Senha:</strong> 123456</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/login" class="btn">🚀 Ir para Login</a>
+            <a href="/pedidos" class="btn">📋 Ver Pedidos (após login)</a>
+        </div>
+
+        <div class="test-info">
+            <h3>✨ Funcionalidades Disponíveis</h3>
+            <ul>
+                <li>✅ Login com CNPJ e senha</li>
+                <li>✅ Visualização de pedidos</li>
+                <li>✅ Alteração de status (NOVO → CONCLUÍDO)</li>
+                <li>✅ Histórico de pedidos</li>
+                <li>✅ Logout</li>
+            </ul>
+        </div>
+
+        <div class="test-info">
+            <h3>📝 Dados de Teste</h3>
+            <p>Os dados dos pedidos são carregados do arquivo <code>pedidos.json</code> que contém pedidos de exemplo com:</p>
+            <ul>
+                <li>Informações do cliente (João Silva)</li>
+                <li>Itens dos pedidos (Acarajé, Tempurá)</li>
+                <li>Ingredientes removidos/adicionados</li>
+                <li>Observações</li>
+                <li>Status dos pedidos</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
