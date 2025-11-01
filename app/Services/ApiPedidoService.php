@@ -15,7 +15,7 @@ class ApiPedidoService
 
     public function __construct()
     {
-        $this->baseUrl = config('services.backend.url', 'http://52.201.117.189:8080');
+        $this->baseUrl = config('services.backend.url', 'http://3.90.155.156:8080');
         $this->token = session('backend_token');
         $this->basicAuthCredentials = session('backend_basic_auth');
         $this->cookies = session('backend_cookies', []);

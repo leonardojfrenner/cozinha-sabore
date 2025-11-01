@@ -10,7 +10,7 @@ Adicione as seguintes variáveis ao arquivo `.env`:
 
 ```env
 # URL do backend Java
-BACKEND_API_URL=http://52.201.117.189:8080
+BACKEND_API_URL=http://3.90.155.156:8080
 
 # Usar backend API (true) ou arquivo local (false)
 USE_BACKEND_API=true
@@ -206,7 +206,7 @@ View (Blade)
 
 1. Configure a URL do backend no `.env`:
    ```env
-   BACKEND_API_URL=http://52.201.117.189:8080
+   BACKEND_API_URL=http://3.90.155.156:8080
    USE_BACKEND_API=true
    ```
 

@@ -15,7 +15,7 @@ class TestBackendConnection extends Command
     {
         $this->info('🔍 Testando conexão com o backend...');
         
-        $baseUrl = config('services.backend.url', 'http://52.201.117.189:8080');
+        $baseUrl = config('services.backend.url', 'http://3.90.155.156:8080');
         $this->info("URL do backend: {$baseUrl}");
         
         // Testa conexão básica
