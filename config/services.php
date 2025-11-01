@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'backend' => [
+        'url' => env('BACKEND_API_URL', 'http://52.201.117.189:8080'),
+    ],
+
 ];

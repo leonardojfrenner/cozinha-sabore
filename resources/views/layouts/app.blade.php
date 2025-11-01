@@ -28,9 +28,30 @@
             background-color: #3b82f6;
             color: white;
         }
+        .status-em_preparo {
+            background-color: #f59e0b;
+            color: white;
+        }
         .status-concluido {
             background-color: #10b981;
             color: white;
+        }
+        .status-cancelado {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
         }
     </style>
 </head>
@@ -76,7 +97,7 @@
             @if(session('error'))
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                     {{ session('error') }}
-                </div-shadow>
+                </div>
             @endif
 
             @yield('content')
@@ -85,5 +106,35 @@
 
     <!-- Scripts -->
     @stack('scripts')
+    
+    <script>
+        // Adiciona loading spinner nos botões ao submeter formulários de atualização de status
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('.update-status-form');
+            
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const button = form.querySelector('button[type="submit"]');
+                    const spinner = button.querySelector('.loading-spinner');
+                    const buttonText = button.querySelector('.button-text');
+                    const otherIcons = button.querySelectorAll('.icon-normal');
+                    
+                    // Desabilita o botão
+                    button.disabled = true;
+                    
+                    // Mostra spinner e esconde outros ícones
+                    if (spinner) {
+                        spinner.classList.remove('hidden');
+                    }
+                    otherIcons.forEach(icon => icon.classList.add('hidden'));
+                    
+                    // Muda o texto do botão
+                    if (buttonText) {
+                        buttonText.textContent = 'Atualizando...';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
