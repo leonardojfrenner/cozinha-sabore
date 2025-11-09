@@ -70,6 +70,10 @@ class ApiPedidoService
         
         $request = Http::timeout(30);
 
+        if (config('services.backend.skip_tls_verify', false)) {
+            $request->withoutVerifying();
+        }
+
         // Adiciona cookies da sessão (JSESSIONID) se existirem
         // Isso é necessário para manter a sessão do Spring Security
         if (!empty($this->cookies)) {
@@ -264,7 +268,13 @@ class ApiPedidoService
                 'data' => ['email' => $email, 'senha' => '***']
             ]);
             
-            $response = Http::timeout(30)
+            $httpClient = Http::timeout(30);
+
+            if (config('services.backend.skip_tls_verify', false)) {
+                $httpClient->withoutVerifying();
+            }
+
+            $response = $httpClient
                 ->acceptJson()
                 ->asJson()
                 ->post($url, $requestData);

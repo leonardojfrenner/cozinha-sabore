@@ -37,6 +37,7 @@ return [
 
     'backend' => [
         'url' => env('BACKEND_API_URL', 'http://3.90.155.156:8080'),
+        'skip_tls_verify' => env('BACKEND_SKIP_TLS_VERIFY', false),
     ],
 
 ];
