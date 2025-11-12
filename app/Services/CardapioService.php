@@ -69,6 +69,18 @@ class CardapioService
         return $this->garantirSucesso($resultado, 'Erro no upload da imagem.');
     }
 
+    public function alterarDisponibilidade(int $id, int $restauranteId, bool $ativo): array
+    {
+        $resultado = $this->apiPedidoService->alterarDisponibilidadeItemCardapio($id, [
+            'restauranteId' => $restauranteId,
+            'ativo' => $ativo,
+        ]);
+
+        $data = $this->garantirSucesso($resultado, 'Erro ao alterar disponibilidade do item.');
+
+        return $this->normalizarItem($data ?? []);
+    }
+
     private function garantirSucesso(array $resultado, string $mensagemPadrao): mixed
     {
         if (($resultado['success'] ?? false) === true) {

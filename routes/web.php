@@ -19,5 +19,8 @@ Route::middleware(['restaurante.auth'])->group(function () {
     Route::get('/pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
     Route::patch('/pedidos/{id}/status', [PedidoController::class, 'updateStatus'])->name('pedidos.update-status');
     Route::get('/pedidos/historico', [PedidoController::class, 'historico'])->name('pedidos.historico');
+
+    Route::patch('/cardapio/{id}/disponibilidade', [CardapioController::class, 'alterarDisponibilidade'])
+        ->name('cardapio.alterar-disponibilidade');
     Route::resource('cardapio', CardapioController::class)->except(['show']);
 });

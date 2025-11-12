@@ -167,6 +167,47 @@ class CardapioController extends Controller
         }
     }
 
+    public function alterarDisponibilidade(Request $request, int $id): RedirectResponse
+    {
+        $restaurante = session('restaurante_logado');
+
+        if (!$restaurante) {
+            return redirect()->route('restaurante.login')
+                ->with('error', 'Sessão expirada. Faça login novamente.');
+        }
+
+        $dados = $request->validate([
+            'ativo' => ['required', 'boolean'],
+        ]);
+
+        try {
+            $ativo = (bool) $dados['ativo'];
+
+            $this->cardapioService->alterarDisponibilidade(
+                $id,
+                (int) ($restaurante['id'] ?? 0),
+                $ativo
+            );
+
+            $mensagem = $ativo
+                ? 'Item reativado com sucesso.'
+                : 'Item pausado com sucesso.';
+
+            return redirect()->route('cardapio.index')
+                ->with('success', $mensagem);
+        } catch (RuntimeException $exception) {
+            Log::error('Erro ao alterar disponibilidade de item do cardápio', [
+                'id' => $id,
+                'restaurante_id' => $restaurante['id'] ?? null,
+                'ativo' => $dados['ativo'] ?? null,
+                'erro' => $exception->getMessage(),
+            ]);
+
+            return redirect()->route('cardapio.index')
+                ->with('error', $exception->getMessage());
+        }
+    }
+
     private function validarFormulario(Request $request, bool $editar): array
     {
         $regras = [

@@ -208,6 +208,11 @@ class ApiPedidoService
         return $this->makeRequest('PUT', "/itens/{$id}", $dados);
     }
 
+    public function alterarDisponibilidadeItemCardapio($id, array $dados)
+    {
+        return $this->makeRequest('PATCH', "/itens/{$id}/ativo", $dados);
+    }
+
     public function deletarItemCardapio($id, $restauranteId = null)
     {
         $dadosQuery = null;

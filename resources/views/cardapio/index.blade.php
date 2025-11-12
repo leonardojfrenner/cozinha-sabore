@@ -7,6 +7,10 @@
 @endpush
 
 @section('content')
+    @php
+        $exibirControlesCardapio = false;
+    @endphp
+
     <div class="cardapio-wrapper">
         <div class="cardapio-header">
             <div class="cardapio-header__text">
@@ -16,11 +20,13 @@
                     Revise os pratos disponíveis, atualize valores e mantenha tudo sincronizado com a cozinha.
                 </p>
             </div>
-            <div class="cardapio-header__actions">
-                <a href="{{ route('cardapio.create') }}" class="cardapio-create-button">
-                    Cadastrar item
-                </a>
-            </div>
+            @if ($exibirControlesCardapio)
+                <div class="cardapio-header__actions">
+                    <a href="{{ route('cardapio.create') }}" class="cardapio-create-button">
+                        Cadastrar item
+                    </a>
+                </div>
+            @endif
         </div>
 
         @if ($itens->isEmpty())
@@ -31,7 +37,7 @@
                     </svg>
                 </span>
                 <p class="cardapio-empty__title">Nenhum item cadastrado ainda</p>
-                <p>Use o botão <strong>“Cadastrar item”</strong> para adicionar o primeiro prato ao cardápio.</p>
+                <p>Os pratos do cardápio aparecerão aqui assim que forem publicados pelo time responsável.</p>
             </div>
         @else
             @php
@@ -97,7 +103,10 @@
 
             <div class="cardapio-mobile-list">
                 @foreach ($itens as $item)
-                    <article class="cardapio-item-card">
+                    @php
+                        $itemAtivo = (bool) ($item['ativo'] ?? true);
+                    @endphp
+                    <article class="cardapio-item-card cardapio-item-card--{{ $itemAtivo ? 'ativo' : 'pausado' }}">
                         <div class="cardapio-item-card__header">
                             <div class="cardapio-item-card__image {{ !empty($item['imagemUrlCompleta'] ?? $item['imagemUrl']) ? 'has-image' : '' }}">
                                 @if (!empty($item['imagemUrlCompleta'] ?? $item['imagemUrl']))
@@ -114,10 +123,13 @@
                                 <span class="cardapio-image__fallback">sem imagem</span>
                             </div>
                             <div class="cardapio-item-card__content">
-                                <div>
+                                <div class="cardapio-item-card__header-text">
                                     <p class="cardapio-item-card__name">
                                         {{ $item['nome'] ?? 'Item sem nome' }}
                                     </p>
+                                    <span class="cardapio-status {{ $itemAtivo ? 'cardapio-status--ativo' : 'cardapio-status--pausado' }}">
+                                        {{ $itemAtivo ? 'Disponível' : 'Pausado' }}
+                                    </span>
                                     @if (!empty($item['categoria']))
                                         <p class="cardapio-item-card__category">
                                             {{ $item['categoria'] }}
@@ -137,34 +149,36 @@
                                     R$ {{ number_format($item['preco'] ?? 0, 2, ',', '.') }}
                                 </span>
                                 <div>
+                                    @php
+                                        $dataItem = $resolveData($item);
+                                    @endphp
                                     Atualizado em
-                                        @php($dataItem = $resolveData($item))
-                                        @if ($dataItem)
-                                            {{ $dataItem->format('d/m/Y H:i') }}
+                                    @if ($dataItem)
+                                        {{ $dataItem->format('d/m/Y H:i') }}
                                     @else
                                         —
                                     @endif
                                 </div>
                             </div>
-                            <div class="cardapio-item-card__actions">
-                                <a
-                                    href="{{ route('cardapio.edit', $item['id']) }}"
-                                    class="cardapio-button cardapio-button--secondary"
-                                >
-                                    Editar
-                                </a>
-                                <form
-                                    action="{{ route('cardapio.destroy', $item['id']) }}"
-                                    method="POST"
-                                    data-confirm="Tem certeza de que deseja remover este item do cardápio?"
-                                >
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="cardapio-button cardapio-button--danger">
-                                        Excluir
-                                    </button>
-                                </form>
-                            </div>
+                            @if ($exibirControlesCardapio)
+                                <div class="cardapio-item-card__actions">
+                                    <form
+                                        action="{{ route('cardapio.alterar-disponibilidade', $item['id']) }}"
+                                        method="POST"
+                                        data-confirm="Tem certeza que deseja {{ $itemAtivo ? 'pausar' : 'reativar' }} este item?"
+                                    >
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="ativo" value="{{ $itemAtivo ? 0 : 1 }}">
+                                        <button
+                                            type="submit"
+                                            class="cardapio-button {{ $itemAtivo ? 'cardapio-button--danger' : 'cardapio-button--primary' }}"
+                                        >
+                                            {{ $itemAtivo ? 'Pausar item' : 'Reativar item' }}
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
                         </div>
                     </article>
                 @endforeach
@@ -178,11 +192,16 @@
                             <th scope="col">Categoria</th>
                             <th scope="col">Preço</th>
                             <th scope="col">Atualizado em</th>
-                            <th scope="col" style="text-align:right;">Ações</th>
+                            @if ($exibirControlesCardapio)
+                                <th scope="col" style="text-align:right;">Ações</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($itens as $item)
+                            @php
+                                $itemAtivo = (bool) ($item['ativo'] ?? true);
+                            @endphp
                             <tr>
                                 <td>
                                     <div class="cardapio-table__item">
@@ -201,9 +220,14 @@
                                             <span class="cardapio-image__fallback">sem imagem</span>
                                         </div>
                                         <div>
-                                            <p class="cardapio-table__name">
-                                                {{ $item['nome'] ?? 'Item sem nome' }}
-                                            </p>
+                                            <div class="cardapio-table__name-wrapper">
+                                                <p class="cardapio-table__name">
+                                                    {{ $item['nome'] ?? 'Item sem nome' }}
+                                                </p>
+                                                <span class="cardapio-status {{ $itemAtivo ? 'cardapio-status--ativo' : 'cardapio-status--pausado' }}">
+                                                    {{ $itemAtivo ? 'Disponível' : 'Pausado' }}
+                                                </span>
+                                            </div>
                                             @if (!empty($item['descricao']))
                                                 <p class="cardapio-table__description">
                                                     {{ $item['descricao'] }}
@@ -218,33 +242,37 @@
                                 <td class="cardapio-table__price">
                                     R$ {{ number_format($item['preco'] ?? 0, 2, ',', '.') }}
                                 </td>
-                <td class="cardapio-table__date">
-                    @php($dataItem = $resolveData($item))
-                    @if ($dataItem)
-                        {{ $dataItem->format('d/m/Y H:i') }}
-                    @endif
-                </td>
-                                <td style="text-align:right;">
-                                    <div class="cardapio-table__actions">
-                                        <a
-                                            href="{{ route('cardapio.edit', $item['id']) }}"
-                                            class="cardapio-button cardapio-button--secondary"
-                                        >
-                                            Editar
-                                        </a>
-                                        <form
-                                            action="{{ route('cardapio.destroy', $item['id']) }}"
-                                            method="POST"
-                                            data-confirm="Tem certeza de que deseja remover este item do cardápio?"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="cardapio-button cardapio-button--danger">
-                                                Excluir
-                                            </button>
-                                        </form>
-                                    </div>
+                                <td class="cardapio-table__date">
+                                    @php
+                                        $dataItem = $resolveData($item);
+                                    @endphp
+                                    @if ($dataItem)
+                                        {{ $dataItem->format('d/m/Y H:i') }}
+                                    @else
+                                        —
+                                    @endif
                                 </td>
+                                @if ($exibirControlesCardapio)
+                                    <td style="text-align:right;">
+                                        <div class="cardapio-table__actions">
+                                            <form
+                                                action="{{ route('cardapio.alterar-disponibilidade', $item['id']) }}"
+                                                method="POST"
+                                                data-confirm="Tem certeza que deseja {{ $itemAtivo ? 'pausar' : 'reativar' }} este item?"
+                                            >
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="ativo" value="{{ $itemAtivo ? 0 : 1 }}">
+                                                <button
+                                                    type="submit"
+                                                    class="cardapio-button {{ $itemAtivo ? 'cardapio-button--danger' : 'cardapio-button--primary' }}"
+                                                >
+                                                    {{ $itemAtivo ? 'Pausar item' : 'Reativar item' }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>

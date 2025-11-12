@@ -200,6 +200,11 @@
     box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08);
 }
 
+.cardapio-item-card--pausado {
+    border-color: rgba(248, 113, 113, 0.4);
+    box-shadow: 0 15px 30px rgba(248, 113, 113, 0.1);
+}
+
 .cardapio-item-card__header {
     display: flex;
     gap: 18px;
@@ -245,6 +250,13 @@
     font-size: 14px;
     color: var(--cardapio-muted);
     line-height: 1.5;
+}
+
+.cardapio-item-card__header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
 }
 
 .cardapio-item-card__footer {
@@ -299,6 +311,10 @@
     background: linear-gradient(135deg, #f87171, #dc2626);
     color: #ffffff;
     box-shadow: 0 12px 24px rgba(248, 113, 113, 0.25);
+}
+
+.cardapio-button--danger:hover {
+    box-shadow: 0 14px 28px rgba(248, 113, 113, 0.3);
 }
 
 .cardapio-button:hover {
@@ -367,6 +383,12 @@
     color: var(--cardapio-text);
 }
 
+.cardapio-table__name-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
 .cardapio-table__description {
     margin: 8px 0 0;
     font-size: 13px;
@@ -415,6 +437,29 @@
     object-fit: cover;
     border-radius: inherit;
     display: block;
+}
+
+.cardapio-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.cardapio-status--ativo {
+    background: rgba(34, 197, 94, 0.15);
+    color: #15803d;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.cardapio-status--pausado {
+    background: rgba(248, 113, 113, 0.15);
+    color: #b91c1c;
+    border: 1px solid rgba(248, 113, 113, 0.3);
 }
 
 @media (min-width: 768px) {

@@ -36,9 +36,6 @@
                     <a href="{{ route('pedidos.index') }}" class="navbar__link {{ request()->routeIs('pedidos.index', 'pedidos.show', 'pedidos.edit') ? 'is-active' : '' }}">
                         Pedidos
                     </a>
-                    <a href="{{ route('cardapio.index') }}" class="navbar__link {{ request()->routeIs('cardapio.*') ? 'is-active' : '' }}">
-                        Cardápio
-                    </a>
                     <a href="{{ route('pedidos.historico') }}" class="navbar__link {{ request()->routeIs('pedidos.historico') ? 'is-active' : '' }}">
                         Histórico
                     </a>
