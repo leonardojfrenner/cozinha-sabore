@@ -2,205 +2,204 @@
 
 @section('title', 'Histórico de Pedidos - Cozinha Sabore')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/pedidos.css') }}">
+@endpush
+
 @section('content')
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-800">Histórico de Pedidos</h1>
-    <p class="text-gray-600 mt-2">Visualize todos os pedidos já processados</p>
+<div class="orders-header">
+    <div class="orders-header__left">
+        <h1>Histórico de Pedidos</h1>
+        <p class="orders-header__subtitle">Visualize todos os pedidos já processados</p>
+    </div>
 </div>
 
-<!-- Filtros -->
-<div class="mb-6 bg-white p-4 rounded-lg shadow-sm">
-    <div class="flex flex-wrap gap-4">
-        <div>
-            <label for="status_filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select id="status_filter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+<section class="cardapio-categories" aria-label="Filtros de histórico">
+    <div>
+        <p class="cardapio-categories__title">Filtros</p>
+        <p class="cardapio-categories__subtitle">Selecione status e data para refinar os resultados.</p>
+    </div>
+    <div class="order-actions__grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div class="cardapio-form-field">
+            <label for="status_filter">Status</label>
+            <select id="status_filter" class="cardapio-form-input">
                 <option value="">Todos</option>
                 <option value="NOVO">Novo</option>
                 <option value="CONCLUIDO">Concluído</option>
             </select>
         </div>
-        <div>
-            <label for="date_filter" class="block text-sm font-medium text-gray-700 mb-1">Data</label>
-            <input type="date" id="date_filter" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+        <div class="cardapio-form-field">
+            <label for="date_filter">Data</label>
+            <input type="date" id="date_filter" class="cardapio-form-input">
         </div>
-        <div class="flex items-end">
-            <button onclick="filterPedidos()" class="btn-primary px-4 py-2 rounded-md text-white text-sm font-medium">
-                Filtrar
-            </button>
-        </div>
+        <button type="button" class="order-button order-button--start" onclick="filterPedidos()">Filtrar</button>
     </div>
-</div>
+</section>
 
 @if($pedidos->count() > 0)
-    <div class="grid gap-6" id="pedidos-container">
+    <div class="orders-grid" id="pedidos-container" style="margin-top: 24px;">
         @foreach($pedidos as $pedido)
-            <div class="pedido-card bg-white rounded-lg shadow-md p-6 border-l-4 {{ $pedido['status'] === 'NOVO' ? 'border-blue-500' : 'border-green-500' }}" 
-                 data-status="{{ $pedido['status'] }}" 
-                 data-date="{{ \Carbon\Carbon::parse($pedido['criadoEm'])->format('Y-m-d') }}">
-                
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-800">
-                            Pedido #{{ $pedido['id'] }}
-                        </h3>
-                        <p class="text-sm text-gray-600">
-                            {{ \Carbon\Carbon::parse($pedido['criadoEm'])->format('d/m/Y H:i') }}
-                        </p>
+            @php
+                $statusInfo = match(strtoupper($pedido['status'] ?? 'NOVO')) {
+                    'CONCLUIDO' => ['card_class' => 'order-card order-card--concluido', 'badge_class' => 'status-badge status-badge--concluido'],
+                    'NOVO' => ['card_class' => 'order-card order-card--novo', 'badge_class' => 'status-badge status-badge--novo'],
+                    default => ['card_class' => 'order-card order-card--em-preparo', 'badge_class' => 'status-badge status-badge--em-preparo'],
+                };
+                $dataPedido = !empty($pedido['criadoEm']) ? \Carbon\Carbon::parse($pedido['criadoEm']) : null;
+            @endphp
+            <article class="{{ $statusInfo['card_class'] }} pedido-card"
+                     data-status="{{ $pedido['status'] }}"
+                     data-date="{{ $dataPedido ? $dataPedido->format('Y-m-d') : '' }}">
+                <header class="order-card__header">
+                    <div class="order-card__header-meta">
+                        <svg class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <h3 class="order-card__title">Pedido #{{ $pedido['id'] }}</h3>
+                            @if ($dataPedido)
+                                <p class="order-card__meta">
+                                    {{ $dataPedido->format('d/m/Y H:i') }}
+                                </p>
+                            @endif
+                        </div>
                     </div>
-                    <span class="px-3 py-1 rounded-full text-sm font-medium {{ $pedido['status'] === 'NOVO' ? 'status-novo' : 'status-concluido' }}">
-                        {{ $pedido['status'] }}
-                    </span>
-                </div>
+                    <span class="{{ $statusInfo['badge_class'] }}">{{ $pedido['status'] }}</span>
+                </header>
 
-                <!-- Informações do Cliente -->
-                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                    <h4 class="font-medium text-gray-800 mb-2">Cliente</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                        <div><span class="font-medium">Nome:</span> {{ $pedido['cliente']['nome'] }}</div>
-                        <div><span class="font-medium">Telefone:</span> {{ $pedido['cliente']['telefone'] }}</div>
-                        <div><span class="font-medium">Email:</span> {{ $pedido['cliente']['email'] }}</div>
-                        <div><span class="font-medium">CPF:</span> {{ $pedido['cliente']['cpf'] }}</div>
-                    </div>
-                    <div class="mt-2 text-sm">
-                        <span class="font-medium">Endereço:</span> 
-                        {{ $pedido['cliente']['rua'] }}, {{ $pedido['cliente']['numero'] }} - {{ $pedido['cliente']['bairro'] }}, {{ $pedido['cliente']['cidade'] }}/{{ $pedido['cliente']['estado'] }}
-                    </div>
-                </div>
-
-                <!-- Itens do Pedido -->
-                <div class="mb-4">
-                    <h4 class="font-medium text-gray-800 mb-3">Itens do Pedido</h4>
-                    <div class="space-y-3">
-                        @foreach($pedido['itens'] as $item)
-                            <div class="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
-                                <div class="flex-1">
-                                    <h5 class="font-medium text-gray-800">{{ $item['itemRestaurante']['nome'] }}</h5>
-                                    <p class="text-sm text-gray-600 mt-1">{{ $item['itemRestaurante']['descricao'] }}</p>
-                                    <div class="flex items-center mt-2 space-x-4 text-sm text-gray-600">
-                                        <span>Qtd: {{ $item['quantidade'] }}</span>
-                                        <span>R$ {{ number_format($item['itemRestaurante']['preco'], 2, ',', '.') }}</span>
-                                        <span class="font-medium">Total: R$ {{ number_format($item['itemRestaurante']['preco'] * $item['quantidade'], 2, ',', '.') }}</span>
-                                    </div>
-                                    
-                                    @if($item['ingredientesRemovidos'])
-                                        <div class="mt-2 text-sm">
-                                            <span class="font-medium text-red-600">Removido:</span> {{ $item['ingredientesRemovidos'] }}
-                                        </div>
-                                    @endif
-                                    
-                                    @if($item['ingredientesAdicionados'])
-                                        <div class="mt-2 text-sm">
-                                            <span class="font-medium text-green-600">Adicionado:</span> {{ $item['ingredientesAdicionados'] }}
-                                        </div>
-                                    @endif
-                                    
-                                    @if($item['observacoes'])
-                                        <div class="mt-2 text-sm">
-                                            <span class="font-medium text-blue-600">Observações:</span> {{ $item['observacoes'] }}
-                                        </div>
-                                    @endif
-                                </div>
+                <div class="order-card__body">
+                    <section class="order-section">
+                        <div class="order-section__header">
+                            <svg class="order-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <h4 class="order-section__title">Cliente</h4>
+                        </div>
+                        <div class="order-section__grid">
+                            <div class="order-section__row">
+                                <span class="order-section__label">Nome:</span>
+                                <span class="order-section__value">{{ $pedido['cliente']['nome'] }}</span>
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                @if($pedido['observacoesGerais'])
-                    <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <h4 class="font-medium text-yellow-800 mb-1">Observações Gerais</h4>
-                        <p class="text-sm text-yellow-700">{{ $pedido['observacoesGerais'] }}</p>
-                    </div>
-                @endif
-
-                <!-- Total do Pedido -->
-                <div class="mb-4 p-3 bg-gray-100 rounded-lg">
-                    <div class="flex justify-between items-center">
-                        <span class="text-lg font-semibold text-gray-800">Total do Pedido:</span>
-                        <span class="text-xl font-bold text-gray-800">
-                            R$ {{ number_format(collect($pedido['itens'])->sum(function($item) { return $item['itemRestaurante']['preco'] * $item['quantidade']; }), 2, ',', '.') }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Status do Pedido -->
-                <div class="text-center">
-                    @if($pedido['status'] === 'CONCLUIDO')
-                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            <div class="order-section__row">
+                                <span class="order-section__label">Telefone:</span>
+                                <span class="order-section__value">{{ $pedido['cliente']['telefone'] }}</span>
+                            </div>
+                            <div class="order-section__row">
+                                <span class="order-section__label">Email:</span>
+                                <span class="order-section__value">{{ $pedido['cliente']['email'] }}</span>
+                            </div>
+                            <div class="order-section__row">
+                                <span class="order-section__label">CPF:</span>
+                                <span class="order-section__value">{{ $pedido['cliente']['cpf'] }}</span>
+                            </div>
+                        </div>
+                        <div class="order-address">
+                            <svg class="order-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
-                            Pedido Concluído
-                        </span>
-                    @else
-                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                            <span class="order-section__value">
+                                {{ $pedido['cliente']['rua'] }}, {{ $pedido['cliente']['numero'] }} - {{ $pedido['cliente']['bairro'] }},
+                                {{ $pedido['cliente']['cidade'] }}/{{ $pedido['cliente']['estado'] }}
+                            </span>
+                        </div>
+                    </section>
+
+                    <section class="order-section">
+                        <div class="order-section__header">
+                            <svg class="order-section__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                             </svg>
-                            Pedido Pendente
-                        </span>
+                            <h4 class="order-section__title">Itens do Pedido</h4>
+                        </div>
+                        <div class="order-items__wrapper">
+                            @foreach($pedido['itens'] as $item)
+                                <div class="order-item">
+                                    <div class="order-item__header">
+                                        <h5 class="order-item__title">{{ $item['itemRestaurante']['nome'] }}</h5>
+                                        <span class="order-item__quantity">x{{ $item['quantidade'] }}</span>
+                                    </div>
+                                    @if($item['itemRestaurante']['descricao'])
+                                        <p class="order-item__description">{{ $item['itemRestaurante']['descricao'] }}</p>
+                                    @endif
+                                    <div class="order-item__pricing">
+                                        <span>Unit: <strong>R$ {{ number_format($item['itemRestaurante']['preco'], 2, ',', '.') }}</strong></span>
+                                        <span>Total: <strong>R$ {{ number_format($item['itemRestaurante']['preco'] * $item['quantidade'], 2, ',', '.') }}</strong></span>
+                                    </div>
+                                    <div class="order-item__notes">
+                                        @if($item['ingredientesRemovidos'])
+                                            <span class="order-item__flag order-item__flag--removed"><strong>Removido:</strong> {{ $item['ingredientesRemovidos'] }}</span>
+                                        @endif
+                                        @if($item['ingredientesAdicionados'])
+                                            <span class="order-item__flag order-item__flag--added"><strong>Adicionado:</strong> {{ $item['ingredientesAdicionados'] }}</span>
+                                        @endif
+                                        @if($item['observacoes'])
+                                            <span class="order-item__flag order-item__flag--note"><strong>Observações:</strong> {{ $item['observacoes'] }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+
+                    @if($pedido['observacoesGerais'])
+                        <div class="order-observations">
+                            <h4>Observações Gerais</h4>
+                            <p>{{ $pedido['observacoesGerais'] }}</p>
+                        </div>
                     @endif
+
+                    <div class="order-total">
+                        <div class="order-total__label">
+                            <svg class="order-total__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Total do Pedido
+                        </div>
+                        <span class="order-total__value">
+                            R$ {{ number_format(collect($pedido['itens'])->sum(fn($item) => $item['itemRestaurante']['preco'] * $item['quantidade']), 2, ',', '.') }}
+                        </span>
+                    </div>
+
+                    <div class="order-alert {{ $pedido['status'] === 'CONCLUIDO' ? 'order-alert--success' : 'order-alert--new' }}">
+                        @if($pedido['status'] === 'CONCLUIDO')
+                            ✅ Pedido Concluído
+                        @else
+                            ⏳ Pedido Pendente
+                        @endif
+                    </div>
                 </div>
-            </div>
+            </article>
         @endforeach
     </div>
 
-    <!-- Estatísticas -->
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <svg class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total de Pedidos</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $pedidos->count() }}</p>
-                </div>
-            </div>
+    <section class="cardapio-stats" style="margin-top: 32px;">
+        <div class="cardapio-stat">
+            <p class="cardapio-stat__label">Total de Pedidos</p>
+            <p class="cardapio-stat__value">{{ $pedidos->count() }}</p>
         </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Pedidos Concluídos</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $pedidos->where('status', 'CONCLUIDO')->count() }}</p>
-                </div>
-            </div>
+        <div class="cardapio-stat">
+            <p class="cardapio-stat__label">Pedidos Concluídos</p>
+            <p class="cardapio-stat__value">{{ $pedidos->where('status', 'CONCLUIDO')->count() }}</p>
         </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <svg class="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Faturamento Total</p>
-                    <p class="text-2xl font-semibold text-gray-900">
-                        R$ {{ number_format($pedidos->sum(function($pedido) { 
-                            return collect($pedido['itens'])->sum(function($item) { 
-                                return $item['itemRestaurante']['preco'] * $item['quantidade']; 
-                            }); 
-                        }), 2, ',', '.') }}
-                    </p>
-                </div>
-            </div>
+        <div class="cardapio-stat">
+            <p class="cardapio-stat__label">Faturamento Total</p>
+            <p class="cardapio-stat__value">
+                R$ {{ number_format($pedidos->sum(function($pedido) {
+                    return collect($pedido['itens'])->sum(function($item) {
+                        return $item['itemRestaurante']['preco'] * $item['quantidade'];
+                    });
+                }), 2, ',', '.') }}
+            </p>
         </div>
-    </div>
+    </section>
 @else
-    <div class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="order-empty">
+        <svg class="order-empty__icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum pedido encontrado</h3>
-        <p class="mt-1 text-sm text-gray-500">Quando houver pedidos, eles aparecerão aqui.</p>
+        <h3>Nenhum pedido encontrado</h3>
+        <p>Quando houver pedidos, eles aparecerão aqui.</p>
     </div>
 @endif
 @endsection
@@ -230,7 +229,6 @@ function filterPedidos() {
     });
 }
 
-// Aplicar filtros automaticamente quando os campos mudarem
 document.getElementById('status_filter').addEventListener('change', filterPedidos);
 document.getElementById('date_filter').addEventListener('change', filterPedidos);
 </script>

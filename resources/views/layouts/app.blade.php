@@ -11,91 +11,58 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
     
     <!-- Styles -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <style>
-        .navbar {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            border: none;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #d97706, #b45309);
-        }
-        .status-novo {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .status-em_preparo {
-            background-color: #f59e0b;
-            color: white;
-        }
-        .status-concluido {
-            background-color: #10b981;
-            color: white;
-        }
-        .status-cancelado {
-            background-color: #ef4444;
-            color: white;
-        }
-        
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        .loading-spinner {
-            animation: spin 1s linear infinite;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    @stack('styles')
 </head>
-<body class="bg-gray-50">
-    <nav class="navbar shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <h1 class="text-white text-xl font-bold">Cozinha Sabore</h1>
-                    </div>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    @if(session('restaurante_logado'))
-                        <span class="text-white">Bem-vindo, {{ session('restaurante_logado')['nome'] }}</span>
-                        <a href="{{ route('pedidos.index') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                            Pedidos
-                        </a>
-                        <a href="{{ route('pedidos.historico') }}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                            Histórico
-                        </a>
-                        <form method="POST" action="{{ route('restaurante.logout') }}" class="inline">
-                            @csrf
-                            <button type="submit" class="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium">
-                                Sair
-                            </button>
-                        </form>
-                    @endif
-                </div>
+<body class="dashboard-body">
+    <header class="navbar">
+        <div class="navbar__content">
+            <div class="navbar__brand">
+                <span class="navbar__title">Cozinha Sabore</span>
+                @if(session('restaurante_logado'))
+                    <span class="navbar__subtitle">Bem-vindo, {{ session('restaurante_logado')['nome'] }}</span>
+                @endif
             </div>
-        </div>
-    </nav>
 
-    <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            @if(session('restaurante_logado'))
+                <button type="button" class="navbar__toggle" aria-label="Abrir menu" data-navbar-toggle>
+                    <span class="navbar__toggle-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+                <nav class="navbar__links" data-navbar-menu>
+                    <a href="{{ route('pedidos.index') }}" class="navbar__link {{ request()->routeIs('pedidos.index', 'pedidos.show', 'pedidos.edit') ? 'is-active' : '' }}">
+                        Pedidos
+                    </a>
+                    <a href="{{ route('cardapio.index') }}" class="navbar__link {{ request()->routeIs('cardapio.*') ? 'is-active' : '' }}">
+                        Cardápio
+                    </a>
+                    <a href="{{ route('pedidos.historico') }}" class="navbar__link {{ request()->routeIs('pedidos.historico') ? 'is-active' : '' }}">
+                        Histórico
+                    </a>
+                    <form method="POST" action="{{ route('restaurante.logout') }}" class="navbar__logout-form">
+                        @csrf
+                        <button type="submit" class="navbar__link navbar__logout">
+                            Sair
+                        </button>
+                    </form>
+                </nav>
+            @endif
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <div class="dashboard-container">
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <div class="alert alert--success">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div class="alert alert--error">
                     {{ session('error') }}
                 </div>
             @endif
@@ -104,36 +71,167 @@
         </div>
     </main>
 
-    <!-- Scripts -->
+    <div class="confirm-modal__overlay" data-confirm-overlay hidden>
+        <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+            <div class="confirm-modal__icon" aria-hidden="true">⚠️</div>
+            <h2 class="confirm-modal__title" id="confirm-modal-title">Confirmar ação</h2>
+            <p class="confirm-modal__message" data-confirm-message>Tem certeza que deseja continuar?</p>
+            <div class="confirm-modal__actions">
+                <button type="button" class="confirm-modal__button confirm-modal__button--ghost" data-confirm-cancel>
+                    Cancelar
+                </button>
+                <button type="button" class="confirm-modal__button confirm-modal__button--primary" data-confirm-accept>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
     @stack('scripts')
-    
     <script>
-        // Adiciona loading spinner nos botões ao submeter formulários de atualização de status
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.querySelector('[data-navbar-toggle]');
+            const menu = document.querySelector('[data-navbar-menu]');
+
+            if (toggle && menu) {
+                toggle.addEventListener('click', () => {
+                    menu.classList.toggle('is-open');
+                    toggle.classList.toggle('is-open');
+                });
+            }
+
             const forms = document.querySelectorAll('.update-status-form');
-            
             forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
+                form.addEventListener('submit', (event) => {
+                    if (event.defaultPrevented) {
+                        return;
+                    }
+
                     const button = form.querySelector('button[type="submit"]');
+                    if (!button) return;
+
                     const spinner = button.querySelector('.loading-spinner');
                     const buttonText = button.querySelector('.button-text');
                     const otherIcons = button.querySelectorAll('.icon-normal');
-                    
-                    // Desabilita o botão
+
                     button.disabled = true;
-                    
-                    // Mostra spinner e esconde outros ícones
+
                     if (spinner) {
                         spinner.classList.remove('hidden');
                     }
                     otherIcons.forEach(icon => icon.classList.add('hidden'));
-                    
-                    // Muda o texto do botão
+
                     if (buttonText) {
                         buttonText.textContent = 'Atualizando...';
                     }
                 });
             });
+
+            const confirmOverlay = document.querySelector('[data-confirm-overlay]');
+            if (!confirmOverlay) {
+                return;
+            }
+
+            const confirmMessageEl = confirmOverlay.querySelector('[data-confirm-message]');
+            const confirmAcceptBtn = confirmOverlay.querySelector('[data-confirm-accept]');
+            const confirmCancelBtn = confirmOverlay.querySelector('[data-confirm-cancel]');
+
+            let confirmResolver = null;
+            let previousActiveElement = null;
+
+            const hideOverlay = () => {
+                if (!confirmOverlay.classList.contains('is-visible')) {
+                    confirmOverlay.setAttribute('hidden', '');
+                    return;
+                }
+
+                const handleTransitionEnd = (event) => {
+                    if (event.target !== confirmOverlay) return;
+                    confirmOverlay.setAttribute('hidden', '');
+                    confirmOverlay.removeEventListener('transitionend', handleTransitionEnd);
+                };
+
+                confirmOverlay.addEventListener('transitionend', handleTransitionEnd, { once: true });
+                confirmOverlay.classList.remove('is-visible');
+            };
+
+            const closeConfirm = (approved) => {
+                hideOverlay();
+
+                if (confirmResolver) {
+                    confirmResolver(approved);
+                    confirmResolver = null;
+                }
+
+                if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+                    previousActiveElement.focus();
+                }
+            };
+
+            const openConfirm = (message) => {
+                if (confirmResolver) {
+                    return Promise.resolve(false);
+                }
+
+                confirmMessageEl.textContent = message || 'Tem certeza que deseja continuar?';
+                previousActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                confirmOverlay.removeAttribute('hidden');
+                requestAnimationFrame(() => {
+                    confirmOverlay.classList.add('is-visible');
+                    confirmAcceptBtn.focus();
+                });
+
+                return new Promise((resolve) => {
+                    confirmResolver = resolve;
+                });
+            };
+
+            confirmAcceptBtn.addEventListener('click', () => closeConfirm(true));
+            confirmCancelBtn.addEventListener('click', () => closeConfirm(false));
+
+            confirmOverlay.addEventListener('click', (event) => {
+                if (event.target === confirmOverlay) {
+                    closeConfirm(false);
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && confirmOverlay.classList.contains('is-visible')) {
+                    closeConfirm(false);
+                }
+            });
+
+            document.addEventListener('submit', async (event) => {
+                const form = event.target;
+
+                if (!(form instanceof HTMLFormElement)) {
+                    return;
+                }
+
+                const message = form.getAttribute('data-confirm');
+                if (!message) {
+                    return;
+                }
+
+                if (form.dataset.confirmed === 'true') {
+                    delete form.dataset.confirmed;
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopImmediatePropagation();
+
+                const approved = await openConfirm(message);
+
+                if (approved) {
+                    form.dataset.confirmed = 'true';
+                    if (typeof form.requestSubmit === 'function') {
+                        form.requestSubmit();
+                    } else {
+                        setTimeout(() => form.submit(), 0);
+                    }
+                }
+            }, true);
         });
     </script>
 </body>

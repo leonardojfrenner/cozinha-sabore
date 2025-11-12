@@ -1,0 +1,317 @@
+:root {
+    --cardapio-form-bg: #ffffff;
+    --cardapio-form-border: rgba(148, 163, 184, 0.3);
+    --cardapio-form-muted: #667085;
+    --cardapio-form-text: #1f2937;
+    --cardapio-form-radius: 20px;
+    --cardapio-form-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+    --cardapio-form-accent: #f59e0b;
+    --cardapio-form-accent-dark: #d97706;
+    --cardapio-form-danger: #dc2626;
+}
+
+.cardapio-form-container {
+    max-width: 960px;
+    margin: 0 auto;
+    background: var(--cardapio-form-bg);
+    border: 1px solid var(--cardapio-form-border);
+    border-radius: var(--cardapio-form-radius);
+    padding: clamp(24px, 4vw, 40px);
+    box-shadow: var(--cardapio-form-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.cardapio-form-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cardapio-form-header__eyebrow {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245, 158, 11, 0.8);
+}
+
+.cardapio-form-header__title {
+    margin: 0;
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 700;
+    color: var(--cardapio-form-text);
+}
+
+.cardapio-form-header__description {
+    margin: 0;
+    font-size: 14px;
+    color: var(--cardapio-form-muted);
+    line-height: 1.6;
+}
+
+.cardapio-form-highlight-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.cardapio-form-highlight {
+    background: rgba(253, 246, 235, 0.8);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--cardapio-form-muted);
+}
+
+.cardapio-form-highlight strong {
+    color: var(--cardapio-form-text);
+}
+
+.cardapio-form-alert {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: rgba(253, 230, 138, 0.35);
+    border: 1px solid rgba(253, 186, 116, 0.5);
+    color: #92400e;
+    border-radius: 18px;
+    padding: 18px 20px;
+    font-size: 13px;
+}
+
+.cardapio-form-alert__icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cardapio-form-accent-dark);
+    box-shadow: 0 6px 12px rgba(253, 186, 116, 0.25);
+}
+
+.cardapio-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.cardapio-form-section__header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cardapio-form-section__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cardapio-form-text);
+}
+
+.cardapio-form-section__subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--cardapio-form-muted);
+}
+
+.cardapio-form-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.cardapio-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cardapio-form-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cardapio-form-text);
+}
+
+.cardapio-form-input,
+.cardapio-form-textarea {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: #ffffff;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--cardapio-form-text);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cardapio-form-input:focus,
+.cardapio-form-textarea:focus {
+    outline: none;
+    border-color: var(--cardapio-form-accent);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.cardapio-form-help {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(102, 112, 133, 0.85);
+}
+
+.cardapio-form-price-wrapper {
+    position: relative;
+}
+
+.cardapio-form-price-prefix {
+    position: absolute;
+    inset: 0 auto 0 0;
+    display: flex;
+    align-items: center;
+    padding-inline: 14px;
+    font-weight: 600;
+    font-size: 14px;
+    color: rgba(102, 112, 133, 0.9);
+}
+
+.cardapio-form-price-input {
+    padding-left: 48px;
+}
+
+.cardapio-form-upload {
+    display: block;
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 2px dashed rgba(148, 163, 184, 0.35);
+    background: rgba(248, 250, 252, 0.8);
+    font-size: 13px;
+    color: var(--cardapio-form-muted);
+    text-align: center;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.cardapio-form-upload:hover {
+    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(253, 245, 223, 0.7);
+}
+
+.cardapio-form-preview {
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.cardapio-form-preview img {
+    display: block;
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+}
+
+.cardapio-form-preview__meta {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    font-size: 12px;
+    color: var(--cardapio-form-muted);
+}
+
+.cardapio-form-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.cardapio-form-footer__note {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(102, 112, 133, 0.9);
+}
+
+.cardapio-form-footer__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cardapio-form-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cardapio-form-button--primary {
+    background: linear-gradient(135deg, var(--cardapio-form-accent), var(--cardapio-form-accent-dark));
+    color: #ffffff;
+    box-shadow: 0 15px 32px rgba(217, 119, 6, 0.25);
+}
+
+.cardapio-form-button--secondary {
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--cardapio-form-text);
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+.cardapio-form-button:hover {
+    transform: translateY(-1px);
+}
+
+.cardapio-form-error {
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    background: rgba(254, 226, 226, 0.7);
+    color: #991b1b;
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cardapio-form-error ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+@media (min-width: 768px) {
+    .cardapio-form-header {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .cardapio-form-header__text {
+        max-width: 620px;
+    }
+
+    .cardapio-form-footer {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .cardapio-form-footer__actions {
+        flex-direction: row;
+    }
+}
+

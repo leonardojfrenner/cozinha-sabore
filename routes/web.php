@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RestauranteLoginController;
 use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\CardapioController;
 
 Route::get('/', function () {
     return redirect()->route('restaurante.login');
@@ -18,4 +19,5 @@ Route::middleware(['restaurante.auth'])->group(function () {
     Route::get('/pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
     Route::patch('/pedidos/{id}/status', [PedidoController::class, 'updateStatus'])->name('pedidos.update-status');
     Route::get('/pedidos/historico', [PedidoController::class, 'historico'])->name('pedidos.historico');
+    Route::resource('cardapio', CardapioController::class)->except(['show']);
 });

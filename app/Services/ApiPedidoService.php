@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -68,7 +69,8 @@ class ApiPedidoService
     {
         $url = rtrim($this->baseUrl, '/') . '/' . ltrim($endpoint, '/');
         
-        $request = Http::timeout(30);
+        $request = Http::timeout(30)
+            ->acceptJson();
 
         if (config('services.backend.skip_tls_verify', false)) {
             $request->withoutVerifying();
@@ -119,11 +121,15 @@ class ApiPedidoService
                     default => throw new Exception("Método HTTP não suportado: {$method}")
                 };
             } else {
+                if ($data !== null) {
+                    $request = $request->asJson();
+                }
+
                 $response = match(strtoupper($method)) {
                     'GET' => $request->get($url),
-                    'POST' => $data ? $request->json($data)->post($url) : $request->post($url),
-                    'PUT' => $data ? $request->json($data)->put($url) : $request->put($url),
-                    'PATCH' => $data ? $request->json($data)->patch($url) : $request->patch($url),
+                    'POST' => $request->post($url, $data ?? []),
+                    'PUT' => $request->put($url, $data ?? []),
+                    'PATCH' => $request->patch($url, $data ?? []),
                     'DELETE' => $request->delete($url),
                     default => throw new Exception("Método HTTP não suportado: {$method}")
                 };
@@ -148,6 +154,13 @@ class ApiPedidoService
             }
 
             $errorData = $response->json();
+            Log::warning('Requisição ao backend falhou', [
+                'url' => $url,
+                'method' => strtoupper($method),
+                'status' => $response->status(),
+                'response_body' => $response->body(),
+                'error_json' => $errorData,
+            ]);
             return [
                 'success' => false,
                 'error' => $errorData['message'] ?? 'Erro na requisição',
@@ -159,6 +172,120 @@ class ApiPedidoService
             Log::error('Erro na comunicação com backend', [
                 'url' => $url,
                 'method' => $method,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'Erro de conexão com o servidor: ' . $e->getMessage(),
+                'status' => 500
+            ];
+        }
+    }
+
+    public function listarItensCardapio()
+    {
+        return $this->makeRequest('GET', '/itens');
+    }
+
+    public function listarItensCardapioPorRestaurante($restauranteId)
+    {
+        return $this->makeRequest('GET', "/itens/restaurante/{$restauranteId}");
+    }
+
+    public function buscarItemCardapio($id)
+    {
+        return $this->makeRequest('GET', "/itens/{$id}");
+    }
+
+    public function criarItemCardapio(array $dados)
+    {
+        return $this->makeRequest('POST', '/itens', $dados);
+    }
+
+    public function atualizarItemCardapio($id, array $dados)
+    {
+        return $this->makeRequest('PUT', "/itens/{$id}", $dados);
+    }
+
+    public function deletarItemCardapio($id, $restauranteId = null)
+    {
+        $dadosQuery = null;
+
+        if (!empty($restauranteId)) {
+            $dadosQuery = ['restauranteId' => $restauranteId];
+        }
+
+        return $this->makeRequest('DELETE', "/itens/{$id}", $dadosQuery, $dadosQuery !== null);
+    }
+
+    public function uploadImagemItem(UploadedFile $arquivo)
+    {
+        $url = rtrim($this->baseUrl, '/') . '/itens/upload';
+
+        $request = Http::timeout(30);
+
+        if (config('services.backend.skip_tls_verify', false)) {
+            $request->withoutVerifying();
+        }
+
+        if (!empty($this->cookies)) {
+            $cookieString = '';
+            foreach ($this->cookies as $name => $value) {
+                if ($cookieString) {
+                    $cookieString .= '; ';
+                }
+                $cookieString .= "{$name}={$value}";
+            }
+
+            $request->withHeaders(['Cookie' => $cookieString]);
+        }
+
+        if ($this->token) {
+            $request->withToken($this->token);
+        } elseif ($this->basicAuthCredentials) {
+            $request->withBasicAuth(
+                $this->basicAuthCredentials['email'],
+                $this->basicAuthCredentials['password']
+            );
+        }
+
+        try {
+            $response = $request
+                ->attach(
+                    'file',
+                    file_get_contents($arquivo->getRealPath()),
+                    $arquivo->getClientOriginalName()
+                )
+                ->post($url);
+
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'data' => $response->json(),
+                    'status' => $response->status()
+                ];
+            }
+
+            if ($response->status() === 401) {
+                $this->clearToken();
+                return [
+                    'success' => false,
+                    'error' => 'Não autorizado. Faça login novamente.',
+                    'status' => 401
+                ];
+            }
+
+            $errorData = $response->json();
+            return [
+                'success' => false,
+                'error' => $errorData['message'] ?? 'Erro no upload da imagem',
+                'status' => $response->status(),
+                'data' => $errorData
+            ];
+        } catch (Exception $e) {
+            Log::error('Erro ao enviar imagem para o backend', [
+                'url' => $url,
                 'error' => $e->getMessage()
             ]);
 
